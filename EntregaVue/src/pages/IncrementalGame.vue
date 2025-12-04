@@ -4,6 +4,7 @@
       <h1 class="text-2xl font-semibold">Juego Incremental</h1>
       <div class="flex items-center gap-3">
         <div v-if="prestige > 0" class="text-sm text-purple-600 dark:text-purple-400">Prestigio: {{ prestige }}</div>
+        <button v-if="devMode" class="px-2 py-1 bg-gray-600 text-white rounded" @click="addPointsDev">+Puntos</button>
         <ThemeToggle />
         <button class="px-3 py-1 bg-gray-700 text-white rounded" @click="goToSettings">Ir a configuración</button>
       </div>
@@ -17,11 +18,27 @@
       </div>
     </div>
 
-    <div class="flex items-center gap-4 mb-6">
-      <button class="px-6 py-3 bg-blue-600 text-white rounded shadow" @click="gain()">
-        Hacer click (+{{ Math.floor(clickValue * clickMultiplier) }})
-      </button>
-      <div class="text-gray-600">Valor base: <strong>{{ clickValue }}</strong>, Multiplicador: <strong>x{{ clickMultiplier.toFixed(2) }}</strong></div>
+    <div class="flex items-center justify-between gap-4 mb-6">
+      <div class="flex items-center gap-4">
+        <button class="px-6 py-3 bg-blue-600 text-white rounded shadow" @click="gain()">
+          Hacer click (+{{ Math.floor(clickValue * clickMultiplier) }})
+        </button>
+        <div class="text-gray-600">Valor base: <strong>{{ clickValue }}</strong>, Multiplicador: <strong>x{{ clickMultiplier.toFixed(2) }}</strong></div>
+      </div>
+      <div class="flex gap-2">
+        <button 
+          :class="buyMode === 1 ? 'bg-blue-600' : 'bg-blue-500' " 
+          class="px-3 py-2 text-sm text-white rounded transition-colors" 
+          @click="buyMode = 1">1</button>
+        <button 
+          :class="buyMode === 5 ? 'bg-blue-600' : 'bg-blue-500'" 
+          class="px-3 py-2 text-sm text-white rounded transition-colors" 
+          @click="buyMode = 5">5</button>
+        <button 
+          :class="buyMode === 'max' ? 'bg-blue-600' : 'bg-blue-500'" 
+          class="px-3 py-2 text-sm text-white rounded transition-colors" 
+          @click="buyMode = 'max'">Max</button>
+      </div>
     </div>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -36,11 +53,7 @@
           </div>
           <div class="text-right">
             <div class="text-sm text-gray-700 mb-2">Precio: {{ format(autoCost) }}</div>
-            <div class="flex gap-2">
-              <button class="px-2 py-1 text-sm bg-green-600 text-white rounded" @click="buyAutoQty(1)" :disabled="points < autoCost">1</button>
-              <button class="px-2 py-1 text-sm bg-green-600/90 text-white rounded" @click="buyAutoQty(5)">5</button>
-              <button class="px-2 py-1 text-sm bg-green-700 text-white rounded" @click="buyAutoMax()">Max</button>
-            </div>
+            <button class="px-3 py-1 text-sm bg-green-600 text-white rounded hover:bg-green-700" @click="buyMode === 1 ? buyAutoQty(1) : buyMode === 5 ? buyAutoQty(5) : buyAutoMax()" :disabled="points < autoCost">Comprar</button>
           </div>
         </div>
       </div>
@@ -56,11 +69,7 @@
           </div>
           <div class="text-right">
             <div class="text-sm text-gray-700 mb-2">Precio: {{ format(clickUpgradeCost) }}</div>
-            <div class="flex gap-2">
-              <button class="px-2 py-1 text-sm bg-indigo-600 text-white rounded" @click="buyClickUpgradeQty(1)" :disabled="points < clickUpgradeCost">1</button>
-              <button class="px-2 py-1 text-sm bg-indigo-600/90 text-white rounded" @click="buyClickUpgradeQty(5)">5</button>
-              <button class="px-2 py-1 text-sm bg-indigo-700 text-white rounded" @click="buyClickUpgradeMax()">Max</button>
-            </div>
+            <button class="px-3 py-1 text-sm bg-indigo-600 text-white rounded hover:bg-indigo-700" @click="buyMode === 1 ? buyClickUpgradeQty(1) : buyMode === 5 ? buyClickUpgradeQty(5) : buyClickUpgradeMax()" :disabled="points < clickUpgradeCost">Comprar</button>
           </div>
         </div>
       </div>
@@ -76,11 +85,7 @@
           </div>
           <div class="text-right">
             <div class="text-sm text-gray-700 mb-2">Precio: {{ format(speedUpCost) }}</div>
-            <div class="flex gap-2">
-              <button class="px-2 py-1 text-sm bg-amber-600 text-white rounded" @click="buySpeedUpQty(1)" :disabled="points < speedUpCost || speedUpCount >= MAX_SPEED_UP">1</button>
-              <button class="px-2 py-1 text-sm bg-amber-600/90 text-white rounded" @click="buySpeedUpQty(5)">5</button>
-              <button class="px-2 py-1 text-sm bg-amber-700 text-white rounded" @click="buySpeedUpMax()">Max</button>
-            </div>
+            <button class="px-3 py-1 text-sm bg-amber-600 text-white rounded hover:bg-amber-700" @click="buyMode === 1 ? buySpeedUpQty(1) : buyMode === 5 ? buySpeedUpQty(5) : buySpeedUpMax()" :disabled="points < speedUpCost || speedUpCount >= MAX_SPEED_UP">Comprar</button>
           </div>
         </div>
       </div>
@@ -97,11 +102,7 @@
           </div>
           <div class="text-right">
             <div class="text-sm text-gray-700 mb-2">Precio: {{ format(momentumCost) }}</div>
-            <div class="flex gap-2">
-              <button class="px-2 py-1 text-sm bg-pink-600 text-white rounded" @click="buyMomentumQty(1)" :disabled="points < momentumCost">1</button>
-              <button class="px-2 py-1 text-sm bg-pink-600/90 text-white rounded" @click="buyMomentumQty(5)">5</button>
-              <button class="px-2 py-1 text-sm bg-pink-700 text-white rounded" @click="buyMomentumMax()">Max</button>
-            </div>
+            <button class="px-3 py-1 text-sm bg-pink-600 text-white rounded hover:bg-pink-700" @click="buyMode === 1 ? buyMomentumQty(1) : buyMode === 5 ? buyMomentumQty(5) : buyMomentumMax()" :disabled="points < momentumCost">Comprar</button>
           </div>
         </div>
       </div>
@@ -117,11 +118,7 @@
           </div>
           <div class="text-right">
             <div class="text-sm text-gray-700 mb-2">Precio: {{ format(autoBonusCost) }}</div>
-            <div class="flex gap-2">
-              <button class="px-2 py-1 text-sm bg-cyan-600 text-white rounded" @click="buyAutoBonusQty(1)" :disabled="points < autoBonusCost">1</button>
-              <button class="px-2 py-1 text-sm bg-cyan-600/90 text-white rounded" @click="buyAutoBonusQty(5)">5</button>
-              <button class="px-2 py-1 text-sm bg-cyan-700 text-white rounded" @click="buyAutoBonusMax()">Max</button>
-            </div>
+            <button class="px-3 py-1 text-sm bg-cyan-600 text-white rounded hover:bg-cyan-700" @click="buyMode === 1 ? buyAutoBonusQty(1) : buyMode === 5 ? buyAutoBonusQty(5) : buyAutoBonusMax()" :disabled="points < autoBonusCost">Comprar</button>
           </div>
         </div>
       </div>
@@ -137,11 +134,7 @@
           </div>
           <div class="text-right">
             <div class="text-sm text-gray-700 mb-2">Precio: {{ format(clickFormulaBumpCost) }}</div>
-            <div class="flex gap-2">
-              <button class="px-2 py-1 text-sm bg-violet-600 text-white rounded" @click="buyClickFormulaBumpQty(1)" :disabled="points < clickFormulaBumpCost">1</button>
-              <button class="px-2 py-1 text-sm bg-violet-600/90 text-white rounded" @click="buyClickFormulaBumpQty(5)">5</button>
-              <button class="px-2 py-1 text-sm bg-violet-700 text-white rounded" @click="buyClickFormulaBumpMax()">Max</button>
-            </div>
+            <button class="px-3 py-1 text-sm bg-violet-600 text-white rounded hover:bg-violet-700" @click="buyMode === 1 ? buyClickFormulaBumpQty(1) : buyMode === 5 ? buyClickFormulaBumpQty(5) : buyClickFormulaBumpMax()" :disabled="points < clickFormulaBumpCost">Comprar</button>
           </div>
         </div>
       </div>
@@ -157,18 +150,14 @@
           </div>
           <div class="text-right">
             <div class="text-sm text-gray-700 mb-2">Precio: {{ format(autoCpsBonusCost) }}</div>
-            <div class="flex gap-2">
-              <button class="px-2 py-1 text-sm bg-orange-600 text-white rounded" @click="buyAutoCpsBonusQty(1)" :disabled="points < autoCpsBonusCost">1</button>
-              <button class="px-2 py-1 text-sm bg-orange-600/90 text-white rounded" @click="buyAutoCpsBonusQty(5)">5</button>
-              <button class="px-2 py-1 text-sm bg-orange-700 text-white rounded" @click="buyAutoCpsBonusMax()">Max</button>
-            </div>
+            <button class="px-3 py-1 text-sm bg-orange-600 text-white rounded hover:bg-orange-700" @click="buyMode === 1 ? buyAutoCpsBonusQty(1) : buyMode === 5 ? buyAutoCpsBonusQty(5) : buyAutoCpsBonusMax()" :disabled="points < autoCpsBonusCost">Comprar</button>
           </div>
         </div>
       </div>
       
       <div class="card p-4 rounded bg-white/80 dark:bg-gray-800/80 shadow-sm">
         <h2 class="font-semibold mb-2">Mejora Sinérgica (Mejora 8)</h2>
-        <div class="text-sm text-gray-600 mb-3">Coste base: 5,000,000. Cada compra aumenta el efecto de <strong>Mejora Momentum</strong> multiplicándolo por 2^(((Nivel de click × Nivel de esta mejora)/10) + 1). Escala de coste: 1.1× por compra.</div>
+        <div class="text-sm text-gray-600 mb-3">Aumenta el efecto de la Mejora de momentum.</div>
 
         <div class="flex items-center justify-between">
           <div>
@@ -177,11 +166,7 @@
           </div>
           <div class="text-right">
             <div class="text-sm text-gray-700 mb-2">Coste: {{ format(upgrade8Cost) }}</div>
-            <div class="flex gap-2">
-              <button class="px-2 py-1 text-sm bg-emerald-600 text-white rounded" @click="buyUpgrade8Qty(1)" :disabled="points < upgrade8Cost">1</button>
-              <button class="px-2 py-1 text-sm bg-emerald-600/90 text-white rounded" @click="buyUpgrade8Qty(5)">5</button>
-              <button class="px-2 py-1 text-sm bg-emerald-700 text-white rounded" @click="buyUpgrade8Max()">Max</button>
-            </div>
+            <button class="px-3 py-1 text-sm bg-emerald-600 text-white rounded hover:bg-emerald-700" @click="buyMode === 1 ? buyUpgrade8Qty(1) : buyMode === 5 ? buyUpgrade8Qty(5) : buyUpgrade8Max()" :disabled="points < upgrade8Cost">Comprar</button>
           </div>
         </div>
       </div>
@@ -227,9 +212,14 @@ const momentumLevel = ref(Number(stored('game_momentumLevel', 0)) || 0) // each 
 const autoBonusCount = ref(Number(stored('game_autoBonusCount', 0)) || 0) // formula: n * (sqrt(n) + 1)
 const clickFormulaBump = ref(Number(stored('game_clickFormulaBump', 0)) || 0) // +0.01 to clickValue formula per upgrade (mejora 6)
 
-// Nueva mejora 8 (base 5,000,000)
-const upgrade8Count = ref(Number(stored('game_upgrade8Count', 0)) || 0)
+// Nueva mejora 8 (base 5,000,000) - NO PERSISTE entre partidas
+const upgrade8Count = ref(0)
 
+// Developer mode flag (controls if dev add-points button is visible)
+const devMode = ref(stored('dev_mode', false))
+
+// Estado para el modo de compra múltiple (1, 5, Max)
+const buyMode = ref(1) // 1, 5, o 'max'
 
 // click history for last 20s
 const clicksHistory = ref([])
@@ -266,11 +256,17 @@ const cps = computed(() => {
   return (baseAutos + bonusAutos) * prestigeCpsBonus.value
 })
 
+// Format function: always use scientific-style compacting (default)
 const format = (v) => {
-  if (v >= 1e9) return (v/1e9).toFixed(2) + 'B'
-  if (v >= 1e6) return (v/1e6).toFixed(2) + 'M'
-  if (v >= 1e3) return (v/1e3).toFixed(2) + 'k'
-  return Math.floor(v)
+  if (v === null || typeof v === 'undefined') return '0'
+  if (v < 1000) return Math.floor(v).toString()
+  if (v < 1e6) {
+    if (v >= 1e3) return (v / 1e3).toFixed(2) + 'k'
+    return Math.floor(v).toString()
+  }
+  const e = Math.floor(Math.log10(v))
+  const mant = v / Math.pow(10, e)
+  return mant.toFixed(2) + 'e' + e
 }
 
 const clicksLast20s = computed(() => {
@@ -294,8 +290,8 @@ const momentumMultiplier = computed(() => {
   // Dynamic bonus based on clicks in last 5 seconds (max 5 clicks = full bonus)
   const ratio = Math.min(clicksLast5s.value / 5, 1)
   let result = 1 + (baseMult - 1) * ratio
-  // Aplicar efecto de la nueva mejora (mejora base 5,000,000) si existe
-  if (typeof upgrade8Count !== 'undefined' && upgrade8Count.value > 0) {
+  // Aplicar efecto de la nueva mejora (mejora 8) SOLO si fue comprada al menos una vez
+  if (upgrade8Count.value > 0) {
     // Fórmula modificada: multiplicador adicional = 2^(((clickLevel * upgrade8Count)/10) + 1)
     const extra = Math.pow(2, ((clickLevel.value * upgrade8Count.value) / 10) + 1)
     result *= extra
@@ -388,6 +384,17 @@ const buyUpgrade8 = () => {
     points.value -= cost
     upgrade8Count.value += 1
   }
+}
+
+const addPointsDev = () => {
+  try {
+    const input = prompt('Introduce la cantidad de puntos a añadir:')
+    if (!input) return
+    const sanitized = input.replace(/\s+/g, '').replace(',', '.')
+    const n = Number(sanitized)
+    if (!isFinite(n) || n <= 0) { alert('Cantidad inválida'); return }
+    points.value += n
+  } catch (e) { alert('Error al añadir puntos') }
 }
 
 // Click Formula Bump upgrade: base cost 200000, scaling 1.3x per purchase
@@ -517,7 +524,7 @@ onBeforeUnmount(() => {
   if (tickId) clearInterval(tickId)
 })
 
-watch([points, clickValue, clickLevel, autosCount, speedUpCount, momentumLevel, autoBonusCount, clickFormulaBump, autoCpsBonus, upgrade8Count], () => {
+watch([points, clickValue, clickLevel, autosCount, speedUpCount, momentumLevel, autoBonusCount, clickFormulaBump, autoCpsBonus], () => {
   try {
     localStorage.setItem('game_points', JSON.stringify(points.value))
     localStorage.setItem('game_clickValue', JSON.stringify(clickValue.value))
@@ -528,7 +535,7 @@ watch([points, clickValue, clickLevel, autosCount, speedUpCount, momentumLevel, 
     localStorage.setItem('game_autoBonusCount', JSON.stringify(autoBonusCount.value))
     localStorage.setItem('game_clickFormulaBump', JSON.stringify(clickFormulaBump.value))
     localStorage.setItem('game_autoCpsBonus', JSON.stringify(autoCpsBonus.value))
-    localStorage.setItem('game_upgrade8Count', JSON.stringify(upgrade8Count.value))
+    // Nota: upgrade8Count NO se guarda, se reinicia cada partida
   } catch (e) {}
 })
 
