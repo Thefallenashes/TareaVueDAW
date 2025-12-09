@@ -3,8 +3,8 @@ import vue from '@vitejs/plugin-vue'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  // Base path for GitHub Pages. Replace with your repo name if different.
-  base: '/TareaVueDAW/',
+  // Use relative paths for assets - works on any subdirectory (GitHub Pages, etc)
+  base: './',
   define: {
     'process.env': process.env
   },
