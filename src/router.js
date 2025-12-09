@@ -3,7 +3,7 @@ import IncrementalGame from './pages/IncrementalGame.vue'
 import Prestigio from './pages/Prestigio.vue'
 import Settings from './pages/Settings.vue'
 
-const routerHistory = createWebHistory()
+const routerHistory = createWebHistory(import.meta.env.BASE_URL)
 
 const router = createRouter({
   history: routerHistory,
